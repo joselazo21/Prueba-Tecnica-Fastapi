@@ -1,5 +1,7 @@
 from ..orm.tables import User
 from sqlalchemy import select
+from domain.filters.user import UserSchemaFilter
+from infrastructure.filters.user import UserFilterSet
 
 class UserRepository:
     def __init__(self, db_session):
@@ -22,3 +24,14 @@ class UserRepository:
         query = select(User).where(User.is_deleted.is_(False))
         result = self.db_session.execute(query).scalars().all()
         return result
+    
+    def filter_users(self, filters: UserSchemaFilter):
+        query = select(User)
+        filter_set = UserFilterSet(query)
+        query = filter_set.filter_query(filters.model_dump(exclude_none=True))
+        result = self.db_session.execute(query).scalars().all()
+        return result
+    
+    def delete_user(self, user: User):
+        user.is_deleted = True
+        self.db_session.commit()

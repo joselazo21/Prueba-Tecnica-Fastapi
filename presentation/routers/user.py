@@ -5,8 +5,9 @@ from utils.auth import get_current_user
 from database import get_db
 from sqlalchemy.orm import Session
 from sqlalchemy import select
-from application.services.user import UserListService
+from application.services.user import UserDeleteService, UserListService
 from presentation.serializers.users import UserMapper
+from domain.filters.user import UserSchemaFilter
 
 
 userRouter = APIRouter()
@@ -15,10 +16,11 @@ userRouter = APIRouter()
 async def get_users(
     db: Annotated[Session, Depends(get_db)],
     authenticated: Annotated[User, Depends(get_current_user)],  
+    filters: Annotated[UserSchemaFilter, Depends()]
 ):
     user_service = UserListService(db)
     user_mapper = UserMapper()
-    users = user_service.get_all_users()
+    users = user_service.filter_users(filters=filters)
     
     responses = []
 
@@ -27,4 +29,16 @@ async def get_users(
 
     return responses
 
+@userRouter.delete("/me")
+async def delete_current_user(
+    db: Annotated[Session, Depends(get_db)],
+    authenticated: Annotated[User, Depends(get_current_user)],  
+):
+    user_service = UserListService(db)
+    user_delete_service = UserDeleteService(db)
+    user = user_service.get_by_id(authenticated.id)
+    if user:
+        user_delete_service.delete_user(user)
+        
+    return {"detail": "User deleted successfully."}
 

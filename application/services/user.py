@@ -27,3 +27,14 @@ class UserListService:
     
     def get_all_users(self):
         return self.repo.get_all_users()
+    
+    def filter_users(self, filters):
+        return self.repo.filter_users(filters)
+    
+
+class UserDeleteService:
+    def __init__(self, db):
+        self.repo = UserRepository(db)
+
+    def delete_user(self, user: User):
+        self.repo.delete_user(user)

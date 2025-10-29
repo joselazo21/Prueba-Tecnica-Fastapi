@@ -12,3 +12,11 @@ class PostCreateService:
             content=new_post.content,
             owner_id=owner_id
         )
+    
+
+class PostFilterService:
+    def __init__(self, db: Session):
+        self.repo = PostRepository(db)
+
+    def filter(self, filters):
+        return self.repo.filter_posts(filters)
