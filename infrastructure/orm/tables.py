@@ -1,6 +1,8 @@
 from sqlalchemy.orm import declarative_base, relationship
 from sqlalchemy import Column, Integer, String, ForeignKey, Table
 from database import Base
+from domain.mixins.soft_delete import SoftDeleteMixin
+from domain.mixins.timestamp import TimestampMixin
 
 post_tag = Table(
     "post_tag",
@@ -9,7 +11,8 @@ post_tag = Table(
     Column("tag_id", Integer, ForeignKey("tags.id"), primary_key=True),
 )
 
-class User(Base):
+
+class User(Base, SoftDeleteMixin, TimestampMixin):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -22,7 +25,7 @@ class User(Base):
     comments = relationship("Comments", back_populates="author")
 
 
-class Post(Base):
+class Post(Base, SoftDeleteMixin, TimestampMixin):
     __tablename__ = "posts"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -32,6 +35,8 @@ class Post(Base):
     owner_id = Column(Integer, ForeignKey('users.id'), nullable=False)
     owner = relationship("User", back_populates="posts")
 
+    comments = relationship("Comments", back_populates="post")
+
     tags = relationship(
         "Tag",
         secondary="post_tag", 
@@ -39,7 +44,7 @@ class Post(Base):
     )
 
 
-class Tag(Base):
+class Tag(Base, SoftDeleteMixin, TimestampMixin):
     __tablename__ = "tags"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -52,7 +57,7 @@ class Tag(Base):
     )
 
 
-class Comments(Base):
+class Comments(Base, SoftDeleteMixin, TimestampMixin):
     __tablename__ = "comments"
 
     id = Column(Integer, primary_key=True, index=True)

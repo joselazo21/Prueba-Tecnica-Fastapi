@@ -1,4 +1,5 @@
 from ..orm.tables import User
+from sqlalchemy import select
 
 class UserRepository:
     def __init__(self, db_session):
@@ -16,3 +17,8 @@ class UserRepository:
         self.db_session.commit()
         self.db_session.refresh(new_user)
         return new_user
+    
+    def get_all_users(self):
+        query = select(User).where(User.is_deleted.is_(False))
+        result = self.db_session.execute(query).scalars().all()
+        return result

@@ -8,10 +8,13 @@ from application.services.user import UserListService
 import jwt
 from jwt import PyJWTError as InvalidTokenError
 
+from sqlalchemy.orm import Session
+from database import get_db
+
 from database import get_db as db
 
 password_hash = PasswordHash.recommended()
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
 
 from config import Config
 
@@ -34,8 +37,11 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
-async def get_current_user(db, token: Annotated[str, Depends(oauth2_scheme)]):
-    user_service = UserListService()
+async def get_current_user(
+    token: Annotated[str, Depends(oauth2_scheme)],
+    db: Session = Depends(get_db),
+):
+    user_service = UserListService(db)
 
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -47,10 +53,10 @@ async def get_current_user(db, token: Annotated[str, Depends(oauth2_scheme)]):
         username = payload.get("sub")
         if username is None:
             raise credentials_exception
-        token_data = TokenData(username=username)
+        token_data = TokenData(username=username, user_id=payload.get("user_id"))
     except InvalidTokenError:
         raise credentials_exception
-    user = user_service.get_by_username(db, username=token_data.username)
+    user = user_service.get_by_username(username=token_data.username)
     if user is None:
         raise credentials_exception
     return user

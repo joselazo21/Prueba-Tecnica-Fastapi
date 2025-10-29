@@ -24,3 +24,6 @@ class UserListService:
 
     def get_by_username(self, username: str):
         return self.repo.get_user_by_username(username) 
+    
+    def get_all_users(self):
+        return self.repo.get_all_users()
