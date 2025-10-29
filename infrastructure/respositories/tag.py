@@ -1,6 +1,8 @@
 from sqlalchemy.orm import Session
 from infrastructure.orm.tables import Tag
 from domain.models.tag import TagCreateModel
+from domain.filters.tag import TagSchemaFilter
+from infrastructure.filters.tag import TagFilterSet
 
 class TagRepository:
     def __init__(self, db: Session):
@@ -12,3 +14,10 @@ class TagRepository:
         self.db.commit()
         self.db.refresh(db_tag)
         return db_tag
+    
+    def filter_tags(self, filters: TagSchemaFilter):
+        query = self.db.query(Tag)
+        filter_set = TagFilterSet(query)
+        query = filter_set.filter_query(filters.model_dump(exclude_none=True))
+        return query.all()
+    

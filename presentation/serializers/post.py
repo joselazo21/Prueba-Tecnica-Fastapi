@@ -10,4 +10,5 @@ class PostMapper:
             content=post.content,
             owner_id=post.owner_id,
             tags=[tag.name for tag in post.tags] if post.tags else [],
+            comments=[comment.content for comment in post.comments] if post.comments else []
         )

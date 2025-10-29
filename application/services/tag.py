@@ -8,3 +8,11 @@ class TagCreateservice:
 
     def create_tag(self, tag: TagCreateModel):
         return self.tag_repository.create_tag(tag)
+    
+
+class TagFilterService:
+    def __init__(self, db: Session):
+        self.tag_repository = TagRepository(db)
+
+    def filter_tags(self, filters):
+        return self.tag_repository.filter_tags(filters)
