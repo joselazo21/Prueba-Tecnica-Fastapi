@@ -8,7 +8,7 @@ from application.services.user import UserListService
 import jwt
 from jwt import PyJWTError as InvalidTokenError
 
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from database import get_db
 
 from database import get_db as db
@@ -39,7 +39,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
 
 async def get_current_user(
     token: Annotated[str, Depends(oauth2_scheme)],
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
 ):
     user_service = UserListService(db)
 
@@ -56,15 +56,15 @@ async def get_current_user(
         token_data = TokenData(username=username, user_id=payload.get("user_id"))
     except InvalidTokenError:
         raise credentials_exception
-    user = user_service.get_by_username(username=token_data.username)
+    user = await user_service.get_by_username(username=token_data.username)
     if user is None:
         raise credentials_exception
     return user
 
-def authenticate_user(db, username: str, password: str):
+async def authenticate_user(db, username: str, password: str):
     user_service = UserListService(db)
 
-    user = user_service.get_by_username(username)
+    user = await user_service.get_by_username(username)
     if not user:
         return False
     if not verify_password(password, user.hashed_password):

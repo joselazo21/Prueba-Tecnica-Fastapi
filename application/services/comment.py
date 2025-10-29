@@ -1,17 +1,17 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from infrastructure.respositories.comment import CommentRepository
 
 class CommentCreateService:
-    def __init__(self, db: Session):
+    def __init__(self, db: AsyncSession):
         self.content = CommentRepository(db)
 
-    def create_comment(self, comment, author_id: int, post_id: int):
-        return self.content.create_comment(comment, author_id, post_id)
+    async def create_comment(self, comment, author_id: int, post_id: int):
+        return await self.content.create_comment(comment, author_id, post_id)
     
 
 class CommentListService:
-    def __init__(self, db: Session):
+    def __init__(self, db: AsyncSession):
         self.repo = CommentRepository(db)
 
-    def filter_comments(self, filters):
-        return self.repo.filter_comments(filters)
+    async def filter_comments(self, filters):
+        return await self.repo.filter_comments(filters)

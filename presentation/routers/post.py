@@ -5,7 +5,7 @@ from domain.models.post import PostCreateModel
 from utils.auth import get_current_user
 from application.services.post import PostCreateService, PostFilterService
 from presentation.serializers.post import PostMapper
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from database import get_db
 from domain.filters.post import PostSchemaFilter
 
@@ -15,26 +15,26 @@ postRouter = APIRouter()
 async def get_posts(
     new_post: PostCreateModel,
     user: Annotated[User, Depends(get_current_user)],
-    db: Annotated[Session, Depends(get_db)],
+    db: Annotated[AsyncSession, Depends(get_db)],
 ):
     post_mapper = PostMapper()
     post_service = PostCreateService(db)
 
-    created_post = post_service.create(new_post, owner_id=user.id)
+    created_post = await post_service.create(new_post, owner_id=user.id)
 
     return post_mapper.to_api_response(created_post)
 
 
 @postRouter.get("")
 async def filter_posts( 
-    db: Annotated[Session, Depends(get_db)],
+    db: Annotated[AsyncSession, Depends(get_db)],
     auth_user: Annotated[User, Depends(get_current_user)],
     filters: Annotated[PostSchemaFilter, Depends()] = None,
 ):
     post_mapper = PostMapper()
     post_service = PostFilterService(db)
 
-    filtered_posts = post_service.filter(filters)
+    filtered_posts = await post_service.filter(filters)
 
     responses = []
 

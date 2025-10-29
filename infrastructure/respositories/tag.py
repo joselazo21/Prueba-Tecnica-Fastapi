@@ -1,23 +1,25 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from infrastructure.orm.tables import Tag
 from domain.models.tag import TagCreateModel
 from domain.filters.tag import TagSchemaFilter
 from infrastructure.filters.tag import TagFilterSet
+from sqlalchemy import select
 
 class TagRepository:
-    def __init__(self, db: Session):
+    def __init__(self, db: AsyncSession):
         self.db = db
 
-    def create_tag(self, tag: TagCreateModel) -> Tag:
+    async def create_tag(self, tag: TagCreateModel) -> Tag:
+        print(f"Session: {self.db}")
         db_tag = Tag(name=tag.name)
         self.db.add(db_tag)
-        self.db.commit()
-        self.db.refresh(db_tag)
+        await self.db.commit()
+        await self.db.refresh(db_tag)
         return db_tag
     
-    def filter_tags(self, filters: TagSchemaFilter):
-        query = self.db.query(Tag)
+    async def filter_tags(self, filters: TagSchemaFilter):
+        query = select(Tag)
         filter_set = TagFilterSet(query)
         query = filter_set.filter_query(filters.model_dump(exclude_none=True))
-        return query.all()
+        return await self.db.execute(query).scalars().all()
     

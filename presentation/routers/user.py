@@ -3,7 +3,7 @@ from typing import Annotated
 from domain.models.user import User
 from utils.auth import get_current_user
 from database import get_db
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from application.services.user import UserDeleteService, UserListService
 from presentation.serializers.users import UserMapper
@@ -14,13 +14,13 @@ userRouter = APIRouter()
 
 @userRouter.get("")
 async def get_users(
-    db: Annotated[Session, Depends(get_db)],
+    db: Annotated[AsyncSession, Depends(get_db)],
     authenticated: Annotated[User, Depends(get_current_user)],  
     filters: Annotated[UserSchemaFilter, Depends()]
 ):
     user_service = UserListService(db)
     user_mapper = UserMapper()
-    users = user_service.filter_users(filters=filters)
+    users = await user_service.filter_users(filters=filters)
     
     responses = []
 
@@ -31,14 +31,14 @@ async def get_users(
 
 @userRouter.delete("/me")
 async def delete_current_user(
-    db: Annotated[Session, Depends(get_db)],
+    db: Annotated[AsyncSession, Depends(get_db)],
     authenticated: Annotated[User, Depends(get_current_user)],  
 ):
     user_service = UserListService(db)
     user_delete_service = UserDeleteService(db)
     user = user_service.get_by_id(authenticated.id)
     if user:
-        user_delete_service.delete_user(user)
+        await user_delete_service.delete_user(user)
         
     return {"detail": "User deleted successfully."}
 
