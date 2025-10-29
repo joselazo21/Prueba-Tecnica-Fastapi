@@ -1,0 +1,42 @@
+from datetime import timedelta
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
+from sqlalchemy.orm import Session
+
+from application.services.user import UserCreateService
+from config import Config
+from database import get_db
+from domain.models.auth import Token
+from domain.models.user import User
+from utils.auth import authenticate_user, create_access_token, get_password_hash
+
+authRouter = APIRouter()
+
+@authRouter.post("/register")
+async def register_user(user: User, db: Session = Depends(get_db)):
+    user_create_service = UserCreateService(db)
+    hashed_password = get_password_hash(user.password)
+    user.password = hashed_password
+    new_user = user_create_service.create(user)
+    return {"username": new_user.username, "email": new_user.email, "full_name": new_user.full_name}
+    
+
+@authRouter.post("/token")
+async def login_for_access_token(
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    db: Session = Depends(get_db),
+) -> Token:
+    user = authenticate_user(db, form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token_expires = timedelta(minutes=Config.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user.username}, expires_delta=access_token_expires
+    )
+    return Token(access_token=access_token, token_type="bearer")
