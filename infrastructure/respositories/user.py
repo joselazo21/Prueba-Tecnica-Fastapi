@@ -14,6 +14,7 @@ class UserRepository:
 
     async def get_user_by_username(self, username: str):
         query = select(User).where(User.username == username)
+        query = User.active(query)
         result = await self.db_session.execute(query)
         return result.scalars().first()
 

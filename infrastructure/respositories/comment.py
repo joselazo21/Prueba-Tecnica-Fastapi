@@ -20,8 +20,13 @@ class CommentRepository:
 
     async def filter_comments(self, filters: CommentSchemaFilter):
         query = select(Comments)
+        query = Comments.active(query)
         filter_set = CommentFilterSet(query)
         query = filter_set.filter_query(filters.model_dump(exclude_none=True))
         result = await self.db.execute(query)
         comments = result.scalars().all()
         return comments
+    
+    async def delete_comment(self, comment: Comments):
+        comment.soft_delete()
+        await self.db.commit()

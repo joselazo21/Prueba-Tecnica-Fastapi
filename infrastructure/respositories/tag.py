@@ -21,5 +21,11 @@ class TagRepository:
         query = select(Tag)
         filter_set = TagFilterSet(query)
         query = filter_set.filter_query(filters.model_dump(exclude_none=True))
-        return await self.db.execute(query).scalars().all()
+        result = await self.db.execute(query)
+        tags = result.scalars().all()
+        return tags
+    
+    async def delete_tag(self, tag: Tag):
+        tag.soft_delete()
+        await self.db.commit()
     

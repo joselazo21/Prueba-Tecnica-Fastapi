@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
+from utils.permissions import check_permission
 from domain.models.comment import CommentCreateModel
 from typing import Annotated
 from domain.models.user import User
 from sqlalchemy.ext.asyncio import AsyncSession
 from utils.auth import get_current_user
-from application.services.comment import CommentCreateService, CommentListService
+from application.services.comment import CommentCreateService, CommentDeleteService, CommentListService
 from presentation.serializers.comment import CommentMapper
 from database import get_db
 from domain.filters.comment import CommentSchemaFilter
@@ -44,3 +45,25 @@ async def get_comments(
         responses.append(comment_mapper.to_api_response(comment))
 
     return responses
+
+@commentRouter.delete("/{comment_id}")
+async def delete_comment(
+    comment_id: int,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    authenticated: Annotated[User, Depends(get_current_user)],
+):
+    comment_service = CommentDeleteService(db)
+    comment_list_srv = CommentListService(db)
+    
+    comment = await comment_list_srv.filter_comments(
+        CommentSchemaFilter(id=comment_id)
+    )
+
+    if not comment:
+        raise HTTPException(status_code=404, detail="Comment not found")
+    
+    comment = comment[0]
+    check_permission(authenticated.id, comment.author_id)
+    await comment_service.delete_comment(comment)
+
+    return {"detail": "Comment deleted successfully"}
