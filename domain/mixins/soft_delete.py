@@ -9,12 +9,12 @@ class SoftDeleteMixin:
 
     def soft_delete(self) -> None:
         self.is_deleted = True
-        self.deleted_at = datetime.utcnow()
+        self.deleted_at = datetime.now()
 
     def restore(self) -> None:
         self.is_deleted = False
-        self.deleted_at = None
+        self.deleted_at = None 
 
     @classmethod
-    def deleted(cls) -> Query:
-        return select(cls).where(cls.is_deleted.is_(True))
+    def active(cls, query:Query) -> Query:
+        return query.where(cls.is_deleted.is_(False))

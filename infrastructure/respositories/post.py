@@ -21,8 +21,15 @@ class PostRepository:
             selectinload(Post.tags),
             selectinload(Post.comments)
         )
+        query = Post.active(query)
+        
         filter_set = PostFilterSet(query)
         query = filter_set.filter_query(filters.model_dump(exclude_none=True))
         result = await self.db_session.execute(query)
         return result.scalars().all()
+    
+    async def delete_post(self, post: Post):
+        post.soft_delete()
+        self.db_session.add(post)
+        await self.db_session.commit()
        

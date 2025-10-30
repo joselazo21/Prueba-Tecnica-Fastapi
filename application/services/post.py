@@ -32,3 +32,11 @@ class PostFilterService:
 
     async def filter(self, filters):
         return await self.repo.filter_posts(filters)
+    
+
+class PostDeleteService:
+    def __init__(self, db: AsyncSession):
+        self.repo = PostRepository(db)
+
+    async def delete(self, post):
+        await self.repo.delete_post(post)
