@@ -1,6 +1,7 @@
 from ..orm.tables import User
 from sqlalchemy import select
 from domain.filters.user import UserSchemaFilter
+from domain.models.user import UserUpdateModel
 from infrastructure.filters.user import UserFilterSet
 
 class UserRepository:
@@ -40,3 +41,12 @@ class UserRepository:
     async def delete_user(self, user: User):
         user.is_deleted = True
         await self.db_session.commit()
+
+    async def update_user(self, new_data: UserUpdateModel, user: User):
+        for field, value in new_data.model_dump(exclude_unset=True).items():
+            setattr(user, field, value)
+        self.db_session.add(user)
+        await self.db_session.commit()
+        await self.db_session.refresh(user)
+        return user
+        

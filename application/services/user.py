@@ -1,6 +1,11 @@
 from infrastructure.respositories.user import UserRepository
 from domain.models.user import User
 from database import get_db as db
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING: 
+    from utils.auth import get_password_hash
+
 
 class UserCreateService:
     def __init__(self, db):
@@ -38,3 +43,11 @@ class UserDeleteService:
 
     async def delete_user(self, user: User):
         await self.repo.delete_user(user)
+
+
+class UserUpdateService:
+    def __init__(self, db):
+        self.repo = UserRepository(db)
+
+    async def update_user(self, new_data, user: User):
+        return await self.repo.update_user(new_data, user)

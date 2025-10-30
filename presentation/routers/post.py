@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
 from typing import Annotated
 from domain.models.user import User
-from domain.models.post import PostCreateModel
+from domain.models.post import PostCreateModel, PostUpdateModel
 from utils.auth import get_current_user
-from application.services.post import PostCreateService, PostFilterService
+from application.services.post import PostCreateService, PostFilterService, PostUpdateService
 from presentation.serializers.post import PostMapper
 from sqlalchemy.ext.asyncio import AsyncSession
 from database import get_db
@@ -69,5 +69,28 @@ async def delete_post(
     await post_delete_service.delete(post)
 
     return {"detail": "Post deleted successfully"}
+
+@postRouter.patch("/{post_id}")
+async def update_post(
+    post_id: int,
+    updated_data: PostUpdateModel,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    auth_user: Annotated[User, Depends(get_current_user)],
+):
+    post_list_service = PostFilterService(db)
+    post_update_service = PostUpdateService(db)
+    post_mapper = PostMapper()
+
+    posts = await post_list_service.filter(PostSchemaFilter(id=post_id))
+
+    if not posts:
+        raise HTTPException(status_code=404, detail="Post not found")
+    
+    post = posts[0]
+
+    check_permission(auth_user.id, post.owner_id)
+    updated_post = await post_update_service.update(updated_data, post)
+
+    return post_mapper.to_api_response(updated_post)
 
     

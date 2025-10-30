@@ -24,3 +24,11 @@ class TagDeleteService:
 
     async def delete_tag(self, tag):
         await self.tag_repository.delete_tag(tag)
+
+
+class TagEditService:
+    def __init__(self, db: AsyncSession):
+        self.tag_repository = TagRepository(db)
+
+    async def edit_tag(self, tag, new_name: str):
+        return await self.tag_repository.edit_tag(tag, new_name)

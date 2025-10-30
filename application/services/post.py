@@ -22,7 +22,7 @@ class PostCreateService:
             title=new_post.title,
             content=new_post.content,
             owner_id=owner_id,
-            tags=tags
+            tags=tags if new_post.tags else None,
         )
     
 
@@ -40,3 +40,11 @@ class PostDeleteService:
 
     async def delete(self, post):
         await self.repo.delete_post(post)
+
+
+class PostUpdateService:
+    def __init__(self, db: AsyncSession):
+        self.repo = PostRepository(db)
+
+    async def update(self, new_data, post):
+        return await self.repo.edit_post(new_data, post)

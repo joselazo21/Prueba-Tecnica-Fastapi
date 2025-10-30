@@ -1,5 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from infrastructure.respositories.comment import CommentRepository
+from domain.models.comment import CommentUpdateModel
+from infrastructure.orm.tables import Comments
 
 class CommentCreateService:
     def __init__(self, db: AsyncSession):
@@ -23,3 +25,10 @@ class CommentDeleteService:
 
     async def delete_comment(self, comment):
         await self.repo.delete_comment(comment)
+
+class CommentUpdateService:
+    def __init__(self, db: AsyncSession):
+        self.repo = CommentRepository(db)
+
+    async def update_comment(self, new_data: CommentUpdateModel, comment: Comments):
+        return await self.repo.update_comment(new_data, comment)

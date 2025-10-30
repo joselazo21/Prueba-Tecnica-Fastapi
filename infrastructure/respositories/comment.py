@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from infrastructure.filters.comment import CommentFilterSet
 from infrastructure.orm.tables import Comments
-from domain.models.comment import CommentCreateModel
+from domain.models.comment import CommentCreateModel, CommentUpdateModel
 from domain.filters.comment import CommentSchemaFilter
 
 class CommentRepository:
@@ -10,7 +10,6 @@ class CommentRepository:
         self.db = db
 
     async def create_comment(self, comment: CommentCreateModel, author_id: int, post_id: int) -> Comments:
-        print(f"Session: {self.db}")
         db_comment = Comments(content=comment.content, author_id=author_id, post_id=post_id)
         self.db.add(db_comment)
         await self.db.commit()
@@ -30,3 +29,12 @@ class CommentRepository:
     async def delete_comment(self, comment: Comments):
         comment.soft_delete()
         await self.db.commit()
+
+    async def update_comment(self, new_data: CommentUpdateModel, comment: Comments):
+        for field, value in new_data.model_dump(exclude_unset=True).items():
+            setattr(comment, field, value)
+        self.db.add(comment)
+        await self.db.commit()
+        await self.db.refresh(comment)
+        return comment
+    

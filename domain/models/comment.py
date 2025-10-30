@@ -9,3 +9,7 @@ class CommentResponseModel(BaseModel):
     content: str
     author_id: int
     post_id: int
+
+
+class CommentUpdateModel(BaseModel):
+    content: str = Field(..., max_length=500)

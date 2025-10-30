@@ -12,3 +12,9 @@ class PostResponse(BaseModel):
     owner_id: int
     tags: list[str]
     comments: list[str]
+
+
+class PostUpdateModel(BaseModel):
+    title: str | None = Field(None, max_length=200)
+    content: str | None = Field(None, max_length=2000)
+    tags: list[int] | None = None

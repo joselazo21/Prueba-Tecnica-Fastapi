@@ -19,6 +19,7 @@ class TagRepository:
     
     async def filter_tags(self, filters: TagSchemaFilter):
         query = select(Tag)
+        query = Tag.active(query)
         filter_set = TagFilterSet(query)
         query = filter_set.filter_query(filters.model_dump(exclude_none=True))
         result = await self.db.execute(query)
@@ -29,3 +30,10 @@ class TagRepository:
         tag.soft_delete()
         await self.db.commit()
     
+    async def edit_tag(self, tag: Tag, new_name: str):
+        if new_name:
+            tag.name = new_name
+        self.db.add(tag)
+        await self.db.commit()
+        await self.db.refresh(tag)
+        return tag

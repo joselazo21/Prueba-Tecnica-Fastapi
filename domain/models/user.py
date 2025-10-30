@@ -11,3 +11,9 @@ class UserResponse(BaseModel):
     id: int
     username: str
     email: str
+
+
+class UserUpdateModel(BaseModel):
+    email: EmailStr | None = Field(None)
+    username: str | None = Field(None, max_length=150)
+    password: str | None = Field(None, min_length=20)
