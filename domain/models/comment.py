@@ -1,11 +1,11 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 class CommentCreateModel(BaseModel):
-    content: str
+    content: str = Field(..., max_length=500)
 
 
 class CommentResponseModel(BaseModel):
-    id: int
+    id: int 
     content: str
     author_id: int
     post_id: int

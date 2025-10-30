@@ -1,8 +1,8 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 class PostCreateModel(BaseModel):
-    title: str
-    content: str
+    title: str = Field(..., max_length=200)
+    content: str = Field(..., max_length=2000)
     tags: list[int] | None = None
 
 class PostResponse(BaseModel):
