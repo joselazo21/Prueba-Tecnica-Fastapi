@@ -14,8 +14,11 @@ class TagFilterService:
     def __init__(self, db: AsyncSession):
         self.tag_repository = TagRepository(db)
 
-    async def filter_tags(self, filters):
-        return await self.tag_repository.filter_tags(filters)
+    async def filter_tags(self, filters, page:int=1, page_size:int=10):
+        return await self.tag_repository.filter_tags(filters, page, page_size)
+    
+    async def get_tags_by_ids(self, ids: list[int]):
+        return await self.tag_repository.get_tags_by_ids(ids)
     
 
 class TagDeleteService:

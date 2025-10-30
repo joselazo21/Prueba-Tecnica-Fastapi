@@ -16,18 +16,26 @@ userRouter = APIRouter()
 async def get_users(
     db: Annotated[AsyncSession, Depends(get_db)],
     authenticated: Annotated[User, Depends(get_current_user)],  
-    filters: Annotated[UserSchemaFilter, Depends()]
+    filters: Annotated[UserSchemaFilter, Depends()],
+    page: int=1,
+    page_size: int=10,
 ):
     user_service = UserListService(db)
     user_mapper = UserMapper()
-    users = await user_service.filter_users(filters=filters)
+    users = await user_service.filter_users(filters=filters, page=page, page_size=page_size)
     
     responses = []
 
     for user in users:
         responses.append(user_mapper.to_api_response(user))
 
-    return responses
+    return {
+        "users": responses,
+        "total": len(responses),
+        "page": page,
+        "page_size": page_size,
+        "total_pages": (len(responses) + page_size - 1) // page_size
+    }
 
 @userRouter.delete("/me")
 async def delete_current_user(

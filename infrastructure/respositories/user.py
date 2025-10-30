@@ -31,12 +31,22 @@ class UserRepository:
         result = await self.db_session.execute(query).scalars().all()
         return result
     
-    async def filter_users(self, filters: UserSchemaFilter):
+    async def get_user_by_email(self, email: str):
+        query = select(User).where(User.email == email)
+        query = User.active(query)
+        result = await self.db_session.execute(query)
+        return result.scalars().first()
+    
+    async def filter_users(self, filters: UserSchemaFilter, page: int, page_size: int):
         query = select(User)
+        query = User.active(query)
         filter_set = UserFilterSet(query)
         query = filter_set.filter_query(filters.model_dump(exclude_none=True))
-        result = await self.db_session.execute(query).scalars().all()
-        return result
+
+        query = query.offset((page - 1) * page_size).limit(page_size)
+        result = await self.db_session.execute(query)
+
+        return result.scalars().all()
     
     async def delete_user(self, user: User):
         user.is_deleted = True

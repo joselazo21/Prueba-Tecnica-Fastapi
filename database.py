@@ -3,6 +3,7 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 from config import Config
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from typing import AsyncGenerator
+from infrastructure.orm.tables import User, Post, Tag, Comments, Base
 
 engine = create_async_engine(Config.DATABASE_URL, echo=False, future=True)
 
@@ -11,8 +12,6 @@ AsyncSessionLocal = sessionmaker(
     class_=AsyncSession,
     expire_on_commit=False
 )
-
-Base = declarative_base()
 
 async def create_tables():
     async with engine.begin() as conn:

@@ -30,11 +30,14 @@ class UserListService:
     async def get_by_username(self, username: str):
         return await self.repo.get_user_by_username(username) 
     
+    async def get_by_email(self, email: str):
+        return await self.repo.get_user_by_email(email)
+    
     async def get_all_users(self):
         return await self.repo.get_all_users()
     
-    async def filter_users(self, filters):
-        return await self.repo.filter_users(filters)
+    async def filter_users(self, filters, page: int, page_size: int):
+        return await self.repo.filter_users(filters, page, page_size)
     
 
 class UserDeleteService:

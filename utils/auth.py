@@ -6,7 +6,7 @@ from typing import Annotated
 from domain.models.auth import Token, TokenData
 from application.services.user import UserListService
 import jwt
-from jwt import PyJWTError as InvalidTokenError
+from jwt import InvalidTokenError
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from database import get_db

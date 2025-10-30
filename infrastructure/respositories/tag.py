@@ -17,11 +17,18 @@ class TagRepository:
         await self.db.refresh(db_tag)
         return db_tag
     
-    async def filter_tags(self, filters: TagSchemaFilter):
+    async def filter_tags(self, filters: TagSchemaFilter, page:int=1, page_size:int=10):
         query = select(Tag)
         query = Tag.active(query)
         filter_set = TagFilterSet(query)
         query = filter_set.filter_query(filters.model_dump(exclude_none=True))
+        query = query.offset((page - 1) * page_size).limit(page_size)
+        result = await self.db.execute(query)
+        tags = result.scalars().all()
+        return tags
+    
+    async def get_tags_by_ids(self, ids: list[int]):
+        query = select(Tag).where(Tag.id.in_(ids))
         result = await self.db.execute(query)
         tags = result.scalars().all()
         return tags

@@ -33,18 +33,26 @@ async def create_comment(
 async def get_comments(
     db: Annotated[AsyncSession, Depends(get_db)],
     authenticated: Annotated[User, Depends(get_current_user)],  
-    filters: Annotated[CommentSchemaFilter, Depends()]
+    filters: Annotated[CommentSchemaFilter, Depends()],
+    page: int=1,
+    page_size: int=10,
 ):
     comment_service = CommentListService(db)
     comment_mapper = CommentMapper()
-    comments = await comment_service.filter_comments(filters=filters)
+    comments = await comment_service.filter_comments(filters=filters, page=page, page_size=page_size)
     
     responses = []
 
     for comment in comments:
         responses.append(comment_mapper.to_api_response(comment))
 
-    return responses
+    return {
+        "comments": responses,
+        "total": len(responses),
+        "page": page,
+        "page_size": page_size,
+        "total_pages": (len(responses) + page_size - 1) // page_size
+    }
 
 @commentRouter.delete("/{comment_id}")
 async def delete_comment(

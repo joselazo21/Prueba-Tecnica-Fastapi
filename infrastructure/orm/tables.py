@@ -1,8 +1,9 @@
 from sqlalchemy.orm import declarative_base, relationship
 from sqlalchemy import Column, Integer, String, ForeignKey, Table
-from database import Base
 from domain.mixins.soft_delete import SoftDeleteMixin
 from domain.mixins.timestamp import TimestampMixin
+
+Base = declarative_base()
 
 post_tag = Table(
     "post_tag",

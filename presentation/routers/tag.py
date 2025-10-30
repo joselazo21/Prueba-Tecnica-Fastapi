@@ -27,16 +27,26 @@ async def create_tag(
 
 @tagRouter.get("")
 async def filter_tags(
-    user: Annotated[User, Depends(get_current_user)],
     db: Annotated[AsyncSession, Depends(get_db)],
+    user: Annotated[User, Depends(get_current_user)],
     filters: Annotated[TagSchemaFilter, Depends()] = None,
+    page: int = 1,
+    page_size: int = 10,
 ):
     tag_service = TagFilterService(db)
-    tags = await tag_service.filter_tags(filters)
+    tags = await tag_service.filter_tags(filters, page, page_size)
 
     tag_mapper = TagMapper()
     
-    return [tag_mapper.to_api_response(tag) for tag in tags]
+    responses = [tag_mapper.to_api_response(tag) for tag in tags]
+
+    return {
+        "tags": responses,
+        "total": len(responses),
+        "page": page,
+        "page_size": page_size,
+        "total_pages": (len(responses) + page_size - 1) // page_size
+    }
 
 @tagRouter.delete("/{tag_id}")
 async def delete_tag(

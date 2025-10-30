@@ -20,7 +20,7 @@ class PostRepository:
         )
         return result.scalar_one()
     
-    async def filter_posts(self, filters: PostSchemaFilter):
+    async def filter_posts(self, filters: PostSchemaFilter, page:int=1, page_size:int=10):
         query = select(Post).options(
             selectinload(Post.tags),
             selectinload(Post.comments)
@@ -29,6 +29,9 @@ class PostRepository:
         
         filter_set = PostFilterSet(query)
         query = filter_set.filter_query(filters.model_dump(exclude_none=True))
+
+        query = query.offset((page - 1) * page_size).limit(page_size)
+        
         result = await self.db_session.execute(query)
         return result.scalars().all()
     

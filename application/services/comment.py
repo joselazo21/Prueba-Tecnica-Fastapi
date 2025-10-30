@@ -15,8 +15,8 @@ class CommentListService:
     def __init__(self, db: AsyncSession):
         self.repo = CommentRepository(db)
 
-    async def filter_comments(self, filters):
-        return await self.repo.filter_comments(filters)
+    async def filter_comments(self, filters, page:int=1, page_size:int=10):
+        return await self.repo.filter_comments(filters, page, page_size)
     
 
 class CommentDeleteService:

@@ -12,11 +12,7 @@ class PostCreateService:
         tags_service = TagFilterService(self.repo.db_session)
 
         if new_post.tags:
-            tags = await tags_service.filter_tags(
-                filters=(
-                TagSchemaFilter(ids_in=new_post.tags)
-                )
-            )
+            tags = await tags_service.get_tags_by_ids(new_post.tags)
     
         return await self.repo.create_post(
             title=new_post.title,
@@ -30,7 +26,7 @@ class PostFilterService:
     def __init__(self, db: AsyncSession):
         self.repo = PostRepository(db)
 
-    async def filter(self, filters):
+    async def filter(self, filters, page:int=1, page_size:int=10):
         return await self.repo.filter_posts(filters)
     
 

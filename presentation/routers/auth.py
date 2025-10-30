@@ -25,6 +25,10 @@ async def register_user(user: User, db: AsyncSession  = Depends(get_db)):
     if existing_user:
         raise HTTPException(status_code=400, detail="Username already registered.")
     
+    exist_email = await user_list_service.get_by_email(user.email)
+    if exist_email:
+        raise HTTPException(status_code=400, detail="Email already registered.")
+    
     hashed_password = get_password_hash(user.password)
     user.password = hashed_password
     new_user = await user_create_service.create(user)

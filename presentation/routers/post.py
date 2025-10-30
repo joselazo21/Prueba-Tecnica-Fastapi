@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from typing import Annotated
 from domain.models.user import User
 from domain.models.post import PostCreateModel, PostUpdateModel
@@ -16,7 +16,7 @@ from utils.permissions import check_permission
 postRouter = APIRouter()
 
 @postRouter.post("")
-async def get_posts(
+async def insert_posts(
     new_post: PostCreateModel,
     user: Annotated[User, Depends(get_current_user)],
     db: Annotated[AsyncSession, Depends(get_db)],
@@ -34,18 +34,26 @@ async def filter_posts(
     db: Annotated[AsyncSession, Depends(get_db)],
     auth_user: Annotated[User, Depends(get_current_user)],
     filters: Annotated[PostSchemaFilter, Depends()] = None,
+    page: int = 1,
+    page_size: int = 10,
 ):
     post_mapper = PostMapper()
     post_service = PostFilterService(db)
 
-    filtered_posts = await post_service.filter(filters)
+    filtered_posts = await post_service.filter(filters, page, page_size)
 
     responses = []
 
     for post in filtered_posts:
         responses.append(post_mapper.to_api_response(post))
 
-    return responses
+    return {
+        "posts": responses,
+        "total": len(responses),
+        "page": page,
+        "page_size": page_size,
+        "total_pages": (len(responses) + page_size - 1) // page_size
+    }
 
 
 @postRouter.delete("/{post_id}")

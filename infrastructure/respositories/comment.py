@@ -17,11 +17,12 @@ class CommentRepository:
         return db_comment
     
 
-    async def filter_comments(self, filters: CommentSchemaFilter):
+    async def filter_comments(self, filters: CommentSchemaFilter, page:int=1, page_size:int=10):
         query = select(Comments)
         query = Comments.active(query)
         filter_set = CommentFilterSet(query)
         query = filter_set.filter_query(filters.model_dump(exclude_none=True))
+        query = query.offset((page - 1) * page_size).limit(page_size)
         result = await self.db.execute(query)
         comments = result.scalars().all()
         return comments
