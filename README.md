@@ -48,22 +48,24 @@ Desarrollar un **CRUD completo** con relaciones complejas, autenticación segura
 
 ## Estructura del Proyecto
 
+```bash
 .
 ├── Prueba-Tecnica-Fastapi/
 │   ├── application/   # Se definen los servicios que consumen directamente de los repositorios
 │   ├── domain/         # Pydantic schemas, mixins y definicion de los schema filters (todos los filtros posibles) usando Pydantic
 │   ├── infrastructure/ # En orm la definicion de las tablas , en filters los filtros y en repositories los repositorios
 │   ├── utils/          # Helpers (JWT, password) , permisos
-    ├── presentation    # Routers y serializadores (mappers)
-    └── main.py         # App FastAPI
-    ├── alembic/         # Alembic
-    ├── docker-compose.yml
-    ├── Dockerfile
-    ├── alembic.ini
-    ├── config.py      # Env vars
-    ├── database.py    # Métodos de inicio de la DB
-    ├── requirements.txt
-    └── README.md
+│   ├── presentation    # Routers y serializadores (mappers)
+│   └── main.py         # App FastAPI
+│
+├── alembic/            # Alembic
+├── docker-compose.yml
+├── Dockerfile
+├── alembic.ini
+├── config.py           # Env vars
+├── database.py         # Métodos de inicio de la DB
+├── requirements.txt
+└── README.md
 
 ## Inicio Rápido (Docker)
 
