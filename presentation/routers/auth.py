@@ -5,7 +5,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from application.services.user import UserCreateService
+from application.services.user import UserCreateService, UserListService
+from presentation.serializers.users import UserMapper
 from config import Config
 from database import get_db
 from domain.models.auth import Token
@@ -17,10 +18,18 @@ authRouter = APIRouter()
 @authRouter.post("/register")
 async def register_user(user: User, db: AsyncSession  = Depends(get_db)):
     user_create_service = UserCreateService(db)
+    user_list_service = UserListService(db)
+    user_mapper = UserMapper()
+
+    existing_user = await user_list_service.get_by_username(user.username)
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Username already registered.")
+    
     hashed_password = get_password_hash(user.password)
     user.password = hashed_password
     new_user = await user_create_service.create(user)
-    return {"username": new_user.username, "email": new_user.email, "full_name": new_user.full_name}
+    
+    return user_mapper.to_api_response(new_user)
     
 
 @authRouter.post("/token")
